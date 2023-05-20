@@ -1,0 +1,32 @@
+version: "3.1"
+
+services:
+  mongo:
+    image: mongo
+    restart: on-failure
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT:-root}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD:-example}
+      MONGO_INITDB_DATABASE: ${MONGO_ROOT_DB:-sample_mflix}
+    ports:
+      - "27017:27017"
+    volumes:
+      - ${PWD}/db/:/docker-entrypoint-initdb.d/:ro
+      - mongodb-data:/data/db
+      - mongodb-log:/var/log/mongodb
+
+  console-app:
+    image: console-app
+    depends_on:
+      - mongo
+    build:
+      context: .
+      target: console-app
+    environment:
+      MONGODB_URI: "mongodb://root:example@mongo:27017/"
+
+volumes:
+  mongodb-data:
+    driver: local
+  mongodb-log:
+    driver: local
